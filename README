@@ -1,0 +1,142 @@
+
+Copyright Rudolf Koenig, 2008, Stefan Strömberg 2010
+License: GPL v2
+
+
+Firmware for NetHome CUL 433 Stick
+----------------------------------
+This is the NetHome firmware for the CUL-stick (see http://busware.de/tiki-index.php?page=CUL
+and http://www.nethome.nu). The NetHomeCUL firmware builds heavily on the work made by 
+Rudolf Koenig for the FHEM-project (see http://developer.berlios.de/projects/culfw/), in fact
+large parts of this file is a direct copy of Rudolf's readme.
+The difference between the firmwares is that Rudolf's version implements a number of specific
+protocols. The NetHomeCUL does not implement any protocols, it just sends and receives raw
+pulse data and let PC-software do the encoding/decoding.
+
+The actual firmware is located in the file: NetHomeCUL.hex. Instructions on how to install
+the firmware on the CUL stick can be found on: http://wiki.nethome.nu/doku.php/installculfirmware
+
+
+- The CUL (CC110x USB Light) has one CC1101 and an AT90USB162 MCU.
+  See http://busware.de/tiki-index.php?page=CUL for details and on how to buy
+  it.
+
+Thanks to the MyUSB project (http://www.fourwalledcubicle.com/MyUSB.php, ) the
+device/firmware combination confirms to the Universal Serial Bus Communication
+Device Class Abstract Control Model (USB CDC ACM) specification, so it can be
+used out of the box with a lot of operating systems. We incorporated the
+relevant parts of MyUSB, version 1.5.2.
+
+
+Prerequisites
+=============
+  You'll need following packets to install the firmware (in paranthesis is the
+  version of the corresponding packet for my installation):
+  - dfu-programmer (0.4.4)
+
+  If you want to modify the firmware:
+  - avr-libc       (1.6.2)
+  - binutils-avr   (2.18)
+  - gcc-avr        (4.3.0)
+
+
+Compile (optional)
+==================
+  Change into your device directory (raw)
+  Type "make", which will output text like:
+    Compiling C: raw.c
+    [...]
+
+
+Install / Flash the firmware
+============================
+  Change into your device directory (raw)
+  - CUL: Insert the USB-Stick while pressing the micro-switch.
+
+  A USB device "03eb:2ffa Atmel Corp." should appear.
+  Now execute "make usbprogram", which will output text like:
+    dfu-programmer at90usb162 erase
+    dfu-programmer at90usb162 flash RAW.hex
+    Validating...
+    6312 bytes used (51.37%)
+    dfu-programmer at90usb162 start
+  The last command will reset the device, a new USB device should appear:
+  "03eb:204b Atmel Corp.". If not try to reinsert the CUL without pressing
+  the micro-switch.
+
+Quick Test:
+===========
+  Linux
+  =====
+    Hopefully you see a device /dev/ttyACM0 (if you use a newer kernel, which
+    loads the cdc_acm kernel module), or a /dev/ttyUSB0 (if your kernel uses
+    usbserial). For usbserial kernel you may need to add the module options
+    "usbserial vendor=0x03eb product=0x204b" to modprobe.conf.
+
+    Connect to the device e.g. with "screen /dev/ttyACM0".
+
+  Windows
+  =======
+    Install a virtual COM port, use MyUSB_USBtoSerial.inf from the tools
+    directory. Locate the COM-port in the device manager shown as
+    "USB Virtual Serial Port (COMx)". Start Hyperterminal, open a connection
+    to COMx 9600,8,n,1.
+
+  Type "V<return>". The string "V 1.0..." should appear. Type X01<return> to
+  enable the data reporting.
+
+
+Protocol
+=========
+  The data is readable ASCII with cr/nl as a message terminator.
+
+  PC -> CUL:
+  ----------
+    The first byte is the command (case significant), the rest ist a hex string
+    (case insignificant), non-hex characters will be ignored, you can insert
+    spaces for aesthetic.  Commands are _not_ echoed.
+    Following commands are supported:
+
+    C<reg>
+      <reg> is a (two digit) hex number: return the value of the cc1101
+      register
+      Example: C35 -> C35 = 0x0D / 13
+
+    e (eeprom) factory reset
+      - resets all eeprom values. A reboot is required to activate the
+        changes.
+
+    l<hex>
+      Set the led mode.
+      - Bit 0: Set LED on/off
+      - Bit 1: The LED will blink once a second if the bit is set
+        
+    t
+      Output the time since boot. The output has the following form: 
+      DDD HH:MM:SS:mmm. Note: the mmm msec has an 8msec resolution.
+      Example: t -> 000 00:00:07.888
+
+    V
+      Print the firmware version.
+      Example: V -> V 1.11 CUL 04
+
+    W<AA><DD> or W<AAAA><DD>
+      Write eeprom byte.  Arguments: one or two-byte hex address <AAAA>
+      followed by one byte hex data <DD>. See R above for address (AAAA)
+      explanation.
+      Example: W1D06
+
+    X<RR> Enable data reporting/seding.
+      <RR> is a one-byte hex value, with following bits (bit 0 is the LSB bit):
+      - 00: Disable radio
+      - 01: Enable radio
+
+    Unknown commands
+      Prints the "help", the list of supported commands
+      Example:
+        ? -> ?? B C F R V W X
+
+TODO/BUGS:
+==========
+  - This is a first very primitive version of the firmware. There is a lot to do...
+  
