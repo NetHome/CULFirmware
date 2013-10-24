@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="NetHomeCUL" basedir=".">
+
+	<target name="clean"> 
+		<delete dir="deploy"/> 
+	</target>
+	<target name ="DeploySource" depends="clean" description="Deploy the source of the project"> 
+        <mkdir dir="deploy"/>
+		<move file="raw/raw.hex" tofile="NetHomeCUL.hex" />
+		<zip destfile="deploy/NetHomeCUL.zip"
+		    basedir="."
+			excludes="**/.svn,deploy,**/*.sym,**/*.map,**/*.lss,**/*.elf,**/*.eep,**/*.zip,**/*.o,**/*.lst"
+		/>
+	</target>
+</project>

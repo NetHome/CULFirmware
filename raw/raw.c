@@ -69,7 +69,11 @@ start_bootloader(void)
   MCUCR = _BV(IVCE);
   MCUCR = _BV(IVSEL);
 
-#define jump_to_bootloader ((void(*)(void))0x1800)
+#ifdef CUL_V3
+#  define jump_to_bootloader ((void(*)(void))0x3800)
+#else
+#  define jump_to_bootloader ((void(*)(void))0x1800)
+#endif
   jump_to_bootloader();
 }
 

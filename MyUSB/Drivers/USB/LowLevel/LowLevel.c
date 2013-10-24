@@ -223,10 +223,14 @@ void USB_SetupInterface(void)
 	#if (defined(USB_CAN_BE_DEVICE) && (defined(USB_FULL_CONTROLLER) || defined(USB_MODIFIED_FULL_CONTROLLER)))
 	if (USB_CurrentMode == USB_MODE_DEVICE)
 	{
+		#ifdef CUL_V3
+		USB_Device_SetHighSpeed();
+		#else
 		if (USB_Options & USB_DEVICE_OPT_LOWSPEED)
 		  USB_Device_SetLowSpeed();
 		else
 		  USB_Device_SetHighSpeed();
+		#endif
 		  
 		USB_INT_Enable(USB_INT_VBUS);
 	}

@@ -43,7 +43,7 @@
 #----------------------------------------------------------------------------
 
 # MCU name
-MCU = at90usb162
+MCU = atmega32u4
 
 # Target board (USBKEY, STK525, STK526, RZUSBSTICK, USER or blank for projects not requiring
 # MyUSB board drivers). If USER is selected, put custom board drivers in a directory called 
@@ -159,6 +159,7 @@ CDEFS += -DUSB_DEVICE_ONLY\
         -DUSE_STATIC_OPTIONS="(USB_DEVICE_OPT_FULLSPEED | USB_OPT_REG_ENABLED)"\
         -DUSE_NONSTANDARD_DESCRIPTOR_NAMES
 
+CDEFS += -DCUL_V3
 
 # Place -D or -U options here for ASM sources
 ADEFS = -DF_CPU=$(F_CPU)
